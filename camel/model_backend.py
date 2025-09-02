@@ -82,6 +82,7 @@ class OpenAIModel(ModelBackend):
                     api_key=OPENAI_API_KEY
                 )
 
+            # max output tokens
             num_max_token_map = {
                 "gpt-3.5-turbo": 4096,
                 "gpt-3.5-turbo-16k": 16384,
@@ -93,6 +94,7 @@ class OpenAIModel(ModelBackend):
                 "gpt-4-turbo": 100000,
                 "gpt-4o": 4096, #100000
                 "gpt-4o-mini": 16384, #100000
+                "gpt-5-2025-08-07": 128000,
             }
             num_max_token = num_max_token_map[self.model_type.value]
             num_max_completion_tokens = num_max_token - num_prompt_tokens
@@ -115,6 +117,7 @@ class OpenAIModel(ModelBackend):
                 raise RuntimeError("Unexpected return from OpenAI API")
             return response
         else:
+            # max output tokens
             num_max_token_map = {
                 "gpt-3.5-turbo": 4096,
                 "gpt-3.5-turbo-16k": 16384,
@@ -126,6 +129,7 @@ class OpenAIModel(ModelBackend):
                 "gpt-4-turbo": 100000,
                 "gpt-4o": 4096, #100000
                 "gpt-4o-mini": 16384, #100000
+                "gpt-5-2025-08-07": 128000,
             }
             num_max_token = num_max_token_map[self.model_type.value]
             num_max_completion_tokens = num_max_token - num_prompt_tokens
@@ -188,6 +192,7 @@ class ModelFactory:
             ModelType.GPT_4_TURBO_V,
             ModelType.GPT_4O,
             ModelType.GPT_4O_MINI,
+            ModelType.GPT_5,
             None
         }:
             model_class = OpenAIModel

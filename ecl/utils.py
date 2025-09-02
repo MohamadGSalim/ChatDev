@@ -57,6 +57,7 @@ def calc_max_token(messages, model):
     gap_between_send_receive = 50
     num_prompt_tokens += gap_between_send_receive
 
+    # max output tokens
     num_max_token_map = {
         "gpt-3.5-turbo": 4096,
         "gpt-3.5-turbo-16k": 16384,
@@ -67,6 +68,7 @@ def calc_max_token(messages, model):
         "gpt-4-32k": 32768,
         "gpt-4o": 4096, #100000
         "gpt-4o-mini": 16384, #100000
+        "gpt-5-2025-08-07": 128000,
     }
     num_max_token = num_max_token_map[model]
     num_max_completion_tokens = num_max_token - num_prompt_tokens
@@ -130,6 +132,7 @@ class OpenAIModel(ModelBackend):
         gap_between_send_receive = 15 * len(messages)
         num_prompt_tokens += gap_between_send_receive
 
+        # max output tokens
         num_max_token_map = {
             "gpt-3.5-turbo": 4096,
             "gpt-3.5-turbo-16k": 16384,
@@ -140,6 +143,7 @@ class OpenAIModel(ModelBackend):
             "gpt-4-32k": 32768,
             "gpt-4o": 4096, #100000
             "gpt-4o-mini": 16384, #100000
+            "gpt-5-2025-08-07": 128000,
         }
         response = client.chat.completions.create(messages = messages,
         model = "gpt-3.5-turbo-16k",

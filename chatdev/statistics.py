@@ -3,6 +3,7 @@ import os
 import numpy as np
 
 
+# cost = price_per_1M_text_tokens / 1K (using Standard pricing and ignoring cached input)
 def prompt_cost(model_type: str, num_prompt_tokens: float, num_completion_tokens: float):
     input_cost_map = {
         "gpt-3.5-turbo": 0.0005,
@@ -15,6 +16,7 @@ def prompt_cost(model_type: str, num_prompt_tokens: float, num_completion_tokens
         "gpt-4-turbo": 0.01,
         "gpt-4o": 0.005,
         "gpt-4o-mini": 0.00015,
+        "gpt-5-2025-08-07": 0.00125,
     }
 
     output_cost_map = {
@@ -28,6 +30,7 @@ def prompt_cost(model_type: str, num_prompt_tokens: float, num_completion_tokens
         "gpt-4-turbo": 0.03,
         "gpt-4o": 0.015,
         "gpt-4o-mini": 0.0006,
+        "gpt-5-2025-08-07": 0.01,
     }
 
     if model_type not in input_cost_map or model_type not in output_cost_map:
@@ -119,6 +122,8 @@ def get_info(dir, log_filepath):
                 model_type = "gpt-4o"
             elif model_type == "GPT_4O_MINI":
                 model_type = "gpt-4o-mini"
+            elif model_type == "GPT_5":
+                model_type = "gpt-5-2025-08-07"
             # print("model_type:", model_type)
 
         lines = open(log_filepath, "r", encoding="utf8").read().split("\n")
