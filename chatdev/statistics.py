@@ -56,6 +56,7 @@ def get_info(dir, log_filepath):
     num_prompt_tokens = -1
     num_completion_tokens = -1
     num_total_tokens = -1
+    num_reasoning_tokens = -1
 
     if os.path.exists(dir):
         filenames = os.listdir(dir)
@@ -154,6 +155,13 @@ def get_info(dir, log_filepath):
             # print("num_total_tokens:", num_total_tokens)
 
         lines = open(log_filepath, "r", encoding="utf8").read().split("\n")
+        sublines = [line for line in lines if line.startswith("reasoning_tokens:")]
+        if len(sublines) > 0:
+            nums = [int(line.split(": ")[-1]) for line in sublines]
+            num_reasoning_tokens = np.sum(nums)
+            # print("num_reasoning_tokens:", num_reasoning_tokens)
+        
+        lines = open(log_filepath, "r", encoding="utf8").read().split("\n")
 
         lines = open(log_filepath, "r", encoding="utf8").read().split("\n")
         num_reflection = 0
@@ -170,7 +178,7 @@ def get_info(dir, log_filepath):
 
     # info = f"🕑duration={duration}s 💰cost=${cost} 🔨version_updates={version_updates} 📃num_code_files={num_code_files} 🏞num_png_files={num_png_files} 📚num_doc_files={num_doc_files} 📃code_lines={code_lines} 📋env_lines={env_lines} 📒manual_lines={manual_lines} 🗣num_utterances={num_utterance} 🤔num_self_reflections={num_reflection} ❓num_prompt_tokens={num_prompt_tokens} ❗num_completion_tokens={num_completion_tokens} ⁉️num_total_tokens={num_total_tokens}"
 
-    info = "\n\n💰**cost**=${:.6f}\n\n🔨**version_updates**={}\n\n📃**num_code_files**={}\n\n🏞**num_png_files**={}\n\n📚**num_doc_files**={}\n\n📃**code_lines**={}\n\n📋**env_lines**={}\n\n📒**manual_lines**={}\n\n🗣**num_utterances**={}\n\n🤔**num_self_reflections**={}\n\n❓**num_prompt_tokens**={}\n\n❗**num_completion_tokens**={}\n\n🌟**num_total_tokens**={}" \
+    info = "\n\n💰**cost**=${:.6f}\n\n🔨**version_updates**={}\n\n📃**num_code_files**={}\n\n🏞**num_png_files**={}\n\n📚**num_doc_files**={}\n\n📃**code_lines**={}\n\n📋**env_lines**={}\n\n📒**manual_lines**={}\n\n🗣**num_utterances**={}\n\n🤔**num_self_reflections**={}\n\n❓**num_prompt_tokens**={}\n\n❗**num_completion_tokens**={}\n\n🌟**num_total_tokens**={}\n\n💡**num_reasoning_tokens**={}" \
         .format(cost,
                 version_updates,
                 num_code_files,
@@ -183,6 +191,7 @@ def get_info(dir, log_filepath):
                 num_reflection,
                 num_prompt_tokens,
                 num_completion_tokens,
-                num_total_tokens)
+                num_total_tokens,
+                num_reasoning_tokens)
 
     return info

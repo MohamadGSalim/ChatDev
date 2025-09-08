@@ -98,7 +98,11 @@ class OpenAIModel(ModelBackend):
             }
             num_max_token = num_max_token_map[self.model_type.value]
             num_max_completion_tokens = num_max_token - num_prompt_tokens
-            self.model_config_dict['max_tokens'] = num_max_completion_tokens
+            self.model_config_dict['max_completion_tokens'] = num_max_completion_tokens
+
+            if self.model_type == ModelType.GPT_5:
+                self.model_config_dict['temperature'] = 1.0
+                self.model_config_dict.pop('logit_bias', None)
 
             response = client.chat.completions.create(*args, **kwargs, model=self.model_type.value,
                                                       **self.model_config_dict)
@@ -110,9 +114,9 @@ class OpenAIModel(ModelBackend):
             )
 
             log_visualize(
-                "**[OpenAI_Usage_Info Receive]**\nprompt_tokens: {}\ncompletion_tokens: {}\ntotal_tokens: {}\ncost: ${:.6f}\n".format(
+                "**[OpenAI_Usage_Info Receive]**\nprompt_tokens: {}\ncompletion_tokens: {}\ntotal_tokens: {}\nreasoning_tokens: {}\ncost: ${:.6f}\n".format(
                     response.usage.prompt_tokens, response.usage.completion_tokens,
-                    response.usage.total_tokens, cost))
+                    response.usage.total_tokens, response.usage.completion_tokens_details.reasoning_tokens, cost))
             if not isinstance(response, ChatCompletion):
                 raise RuntimeError("Unexpected return from OpenAI API")
             return response
@@ -133,7 +137,11 @@ class OpenAIModel(ModelBackend):
             }
             num_max_token = num_max_token_map[self.model_type.value]
             num_max_completion_tokens = num_max_token - num_prompt_tokens
-            self.model_config_dict['max_tokens'] = num_max_completion_tokens
+            self.model_config_dict['max_completion_tokens'] = num_max_completion_tokens
+
+            if self.model_type == ModelType.GPT_5:
+                self.model_config_dict['temperature'] = 1.0
+                self.model_config_dict.pop('logit_bias', None)
 
             response = openai.ChatCompletion.create(*args, **kwargs, model=self.model_type.value,
                                                     **self.model_config_dict)
@@ -145,9 +153,9 @@ class OpenAIModel(ModelBackend):
             )
 
             log_visualize(
-                "**[OpenAI_Usage_Info Receive]**\nprompt_tokens: {}\ncompletion_tokens: {}\ntotal_tokens: {}\ncost: ${:.6f}\n".format(
+                "**[OpenAI_Usage_Info Receive]**\nprompt_tokens: {}\ncompletion_tokens: {}\ntotal_tokens: {}\nreasoning_tokens: {}\ncost: ${:.6f}\n".format(
                     response["usage"]["prompt_tokens"], response["usage"]["completion_tokens"],
-                    response["usage"]["total_tokens"], cost))
+                    response["usage"]["total_tokens"], response["usage"]["completion_tokens_details"]["reasoning_tokens"], cost))
             if not isinstance(response, Dict):
                 raise RuntimeError("Unexpected return from OpenAI API")
             return response

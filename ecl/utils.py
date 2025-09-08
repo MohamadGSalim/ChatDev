@@ -111,6 +111,7 @@ class OpenAIModel(ModelBackend):
         self.prompt_tokens = 0
         self.completion_tokens = 0
         self.total_tokens = 0
+        self.reasoning_tokens = 0
 
     @retry(wait=wait_exponential(min=5, max=60), stop=stop_after_attempt(5))
     def run(self, messages) :
@@ -161,14 +162,15 @@ class OpenAIModel(ModelBackend):
 
         num_max_token = num_max_token_map[self.model_type]
         num_max_completion_tokens = num_max_token - num_prompt_tokens
-        self.model_config_dict['max_tokens'] = num_max_completion_tokens
+        self.model_config_dict['max_completion_tokens'] = num_max_completion_tokens
         log_and_print_online(
-            "InstructionStar generation:\n**[OpenAI_Usage_Info Receive]**\nprompt_tokens: {}\ncompletion_tokens: {}\ntotal_tokens: {}\n".format(
+            "InstructionStar generation:\n**[OpenAI_Usage_Info Receive]**\nprompt_tokens: {}\ncompletion_tokens: {}\ntotal_tokens: {}\nreasoning_tokens: {}\n".format(
                 response["usage"]["prompt_tokens"], response["usage"]["completion_tokens"],
-                response["usage"]["total_tokens"]))
+                response["usage"]["total_tokens"], response["usage"]["completion_tokens_details"]["reasoning_tokens"]))
         self.prompt_tokens += response["usage"]["prompt_tokens"]
         self.completion_tokens += response["usage"]["completion_tokens"]
         self.total_tokens += response["usage"]["total_tokens"]
+        self.reasoning_tokens += response["usage"]["completion_tokens_details"]["reasoning_tokens"]
         
         if not isinstance(response, Dict):
             raise RuntimeError("Unexpected return from OpenAI API")

@@ -81,6 +81,7 @@ const Softwareinfo = {
     "num_prompt_tokens": "-1",
     "num_completion_tokens": "-1",
     "num_total_tokens": "-1",
+    "num_reasoning_tokens": "-1",
 };
 
 //control chars appear speed
@@ -363,6 +364,9 @@ function extraction(contents) {
             }
             if ((/num_total_tokens(?:[\t\n\r\s\D]*?)=(-?(\d*))/g).exec(info) != null) {
                 Softwareinfo.num_total_tokens = (/num_total_tokens(?:[\t\n\r\s\D]*?)=(-?(\d*))/g).exec(info)[1];
+            }
+            if ((/num_reasoning_tokens(?:[\t\n\r\s\D]*?)=(-?(\d*))/g).exec(info) != null) {
+                Softwareinfo.num_reasoning_tokens = (/num_reasoning_tokens(?:[\t\n\r\s\D]*?)=(-?(\d*))/g).exec(info)[1];
             }
             if ((/cost(?:[\t\n\r\s\D]*?)=(.((\d)*\.(\d)*))/g).exec(info) != null) {
                 Softwareinfo.cost = (/cost(?:[\t\n\r\s\D]*?)=(.((\d)*\.(\d)*))/g).exec(info)[1];
