@@ -37,7 +37,7 @@ class ChatGPTConfig:
             (default: :obj:`False`)
         stop (str or list, optional): Up to :obj:`4` sequences where the API
             will stop generating further tokens. (default: :obj:`None`)
-        max_tokens (int, optional): The maximum number of tokens to generate
+        max_completion_tokens (int, optional): The maximum number of tokens to generate
             in the chat completion. The total length of input tokens and
             generated tokens is limited by the model's context length.
             (default: :obj:`None`)
@@ -69,8 +69,9 @@ class ChatGPTConfig:
     n: int = 1
     stream: bool = False
     stop: Optional[Union[str, Sequence[str]]] = None
-    max_tokens: Optional[int] = None
+    # max_tokens: Optional[int] = None # deprecated in new openai api and replaced by max_completion_tokens
+    max_completion_tokens: Optional[int] = None
     presence_penalty: float = 0.0
     frequency_penalty: float = 0.0
     logit_bias: Dict = field(default_factory=dict)
-    user: str = ""
+    # user: str = "" # deprecated in new openai api
