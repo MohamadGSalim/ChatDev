@@ -237,14 +237,19 @@ class ChatAgent(BaseAgent):
 
         if num_tokens < self.model_token_limit:
             response = self.model_backend.run(messages=openai_messages)
+            
             if openai_new_api:
                 if not isinstance(response, ChatCompletion):
                     raise RuntimeError("OpenAI returned unexpected struct")
-                output_messages = [
+                output_messages = []
+                for choice in response.choices:
+                    msg_dict = dict(choice.message)
+                    if "annotations" in msg_dict:
+                        del msg_dict["annotations"]
+                    output_messages.append(
                     ChatMessage(role_name=self.role_name, role_type=self.role_type,
-                                meta_dict=dict(), **dict(choice.message))
-                    for choice in response.choices
-                ]
+                            meta_dict=dict(), **msg_dict)
+                    )
                 info = self.get_info(
                     response.id,
                     response.usage,
@@ -254,11 +259,15 @@ class ChatAgent(BaseAgent):
             else:
                 if not isinstance(response, dict):
                     raise RuntimeError("OpenAI returned unexpected struct")
-                output_messages = [
+                output_messages = []
+                for choice in response["choices"]:
+                    msg_dict = dict(choice["message"])
+                    if "annotations" in msg_dict:
+                        del msg_dict["annotations"]
+                    output_messages.append(
                     ChatMessage(role_name=self.role_name, role_type=self.role_type,
-                                meta_dict=dict(), **dict(choice["message"]))
-                    for choice in response["choices"]
-                ]
+                            meta_dict=dict(), **msg_dict)
+                    )
                 info = self.get_info(
                     response["id"],
                     response["usage"],
