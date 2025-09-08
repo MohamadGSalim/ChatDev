@@ -231,7 +231,12 @@ class ChatChain:
             f.write(self.task_prompt_raw)
 
         preprocess_msg = "**[Preprocessing]**\n\n"
-        chat_gpt_config = ChatGPTConfig()
+
+        # temperature can only be set to 1.0 when using GPT-5 (reasoning model)
+        if self.model_type == ModelType.GPT_5:
+            chat_gpt_config = ChatGPTConfig(temperature=1.0)
+        else:
+            chat_gpt_config = ChatGPTConfig()
 
         preprocess_msg += "**ChatDev Starts** ({})\n\n".format(self.start_time)
         preprocess_msg += "**Timestamp**: {}\n\n".format(self.start_time)
