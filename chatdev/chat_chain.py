@@ -232,10 +232,10 @@ class ChatChain:
 
         preprocess_msg = "**[Preprocessing]**\n\n"
 
-        # temperature can only be set to 1.0 when using GPT-5 (reasoning model) or Claude-Sonnet-4 (with extended thinking)
+        # temperature can only be set to 1.0 when using GPT-5 (reasoning model) or Claude-Sonnet-4-5 (with extended thinking)
         if self.model_type == ModelType.GPT_5:
             chat_gpt_config = ChatGPTConfig(temperature=1.0)
-        elif self.model_type == ModelType.CLAUDE_SONNET_4:
+        elif self.model_type == ModelType.CLAUDE_SONNET_4_5:
             claude_config = ClaudeConfig(temperature=1.0)
         else:
             chat_gpt_config = ChatGPTConfig()
@@ -249,7 +249,7 @@ class ChatChain:
         preprocess_msg += "**project_name**: {}\n\n".format(self.project_name)
         preprocess_msg += "**Log File**: {}\n\n".format(self.log_filepath)
         preprocess_msg += "**ChatDevConfig**:\n{}\n\n".format(self.chat_env.config.__str__())
-        if self.model_type == ModelType.CLAUDE_SONNET_4:
+        if self.model_type == ModelType.CLAUDE_SONNET_4_5:
             preprocess_msg += "**ClaudeConfig**:\n{}\n\n".format(claude_config)
         else:
             preprocess_msg += "**ChatGPTConfig**:\n{}\n\n".format(chat_gpt_config)

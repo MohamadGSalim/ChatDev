@@ -97,7 +97,7 @@ class ChatAgent(BaseAgent):
         self.role_name: str = system_message.role_name
         self.role_type: RoleType = system_message.role_type
         self.model: ModelType = (model if model is not None else ModelType.GPT_3_5_TURBO)
-        if self.model == ModelType.CLAUDE_SONNET_4:
+        if self.model == ModelType.CLAUDE_SONNET_4_5:
             self.model_config: ClaudeConfig = model_config or ClaudeConfig()
         else:
             self.model_config: ChatGPTConfig = model_config or ChatGPTConfig()

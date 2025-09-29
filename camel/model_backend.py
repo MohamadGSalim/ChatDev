@@ -67,7 +67,7 @@ class OpenAIModel(ModelBackend):
 
     def run(self, *args, **kwargs):
         string = "\n".join([message["content"] for message in kwargs["messages"]])
-        if self.model_type == ModelType.CLAUDE_SONNET_4:
+        if self.model_type == ModelType.CLAUDE_SONNET_4_5:
             client = anthropic.Anthropic(
                 api_key=OPENAI_API_KEY,
             )
@@ -107,7 +107,7 @@ class OpenAIModel(ModelBackend):
                 "gpt-4o": 4096, #100000
                 "gpt-4o-mini": 16384, #100000
                 "gpt-5-2025-08-07": 128000,
-                "claude-sonnet-4-20250514": 64000,
+                "claude-sonnet-4-5-20250929": 64000,
             }
             num_max_token = num_max_token_map[self.model_type.value]
             num_max_completion_tokens = num_max_token - num_prompt_tokens
@@ -117,7 +117,7 @@ class OpenAIModel(ModelBackend):
             if self.model_type == ModelType.GPT_5:
                 self.model_config_dict['temperature'] = 1.0
                 self.model_config_dict.pop('logit_bias', None)
-            elif self.model_type == ModelType.CLAUDE_SONNET_4:
+            elif self.model_type == ModelType.CLAUDE_SONNET_4_5:
                 self.model_config_dict['temperature'] = 1.0
                 num_budget_tokens = num_max_completion_tokens - 1
                 extra_body = {
@@ -133,7 +133,7 @@ class OpenAIModel(ModelBackend):
                 num_completion_tokens=response.usage.completion_tokens
             )
 
-            if self.model_type == ModelType.CLAUDE_SONNET_4:
+            if self.model_type == ModelType.CLAUDE_SONNET_4_5:
                 log_visualize(
                     "**[Claude_Usage_Info Receive]**\nprompt_tokens: {}\ncompletion_tokens: {}\ntotal_tokens: {}\ncost: ${:.6f}\n".format(
                         response.usage.prompt_tokens, response.usage.completion_tokens,
@@ -160,7 +160,7 @@ class OpenAIModel(ModelBackend):
                 "gpt-4o": 4096, #100000
                 "gpt-4o-mini": 16384, #100000
                 "gpt-5-2025-08-07": 128000,
-                "claude-sonnet-4-20250514": 64000,
+                "claude-sonnet-4-5-20250929": 64000,
             }
             num_max_token = num_max_token_map[self.model_type.value]
             num_max_completion_tokens = num_max_token - num_prompt_tokens
@@ -170,7 +170,7 @@ class OpenAIModel(ModelBackend):
             if self.model_type == ModelType.GPT_5:
                 self.model_config_dict['temperature'] = 1.0
                 self.model_config_dict.pop('logit_bias', None)
-            elif self.model_type == ModelType.CLAUDE_SONNET_4:
+            elif self.model_type == ModelType.CLAUDE_SONNET_4_5:
                 self.model_config_dict['temperature'] = 1.0
                 num_budget_tokens = num_max_completion_tokens - 1
                 # add extended thinking parameter for Claude
@@ -187,7 +187,7 @@ class OpenAIModel(ModelBackend):
                 num_completion_tokens=response["usage"]["completion_tokens"]
             )
 
-            if self.model_type == ModelType.CLAUDE_SONNET_4:
+            if self.model_type == ModelType.CLAUDE_SONNET_4_5:
                 log_visualize(
                 "**[Claude_Usage_Info Receive]**\nprompt_tokens: {}\ncompletion_tokens: {}\ntotal_tokens: {}\ncost: ${:.6f}\n".format(
                     response["usage"]["prompt_tokens"], response["usage"]["completion_tokens"],
@@ -242,7 +242,7 @@ class ModelFactory:
             ModelType.GPT_4O,
             ModelType.GPT_4O_MINI,
             ModelType.GPT_5,
-            ModelType.CLAUDE_SONNET_4,
+            ModelType.CLAUDE_SONNET_4_5,
             None
         }:
             model_class = OpenAIModel

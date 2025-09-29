@@ -54,7 +54,7 @@ class ModelType(Enum):
     GPT_4O_MINI = "gpt-4o-mini"
     GPT_5 = "gpt-5-2025-08-07"
     
-    CLAUDE_SONNET_4 = "claude-sonnet-4-20250514"  
+    CLAUDE_SONNET_4_5 = "claude-sonnet-4-5-20250929"  
 
     STUB = "stub"
 

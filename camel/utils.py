@@ -130,7 +130,7 @@ def num_tokens_from_messages(
     }:
         return count_tokens_openai_chat_models(messages, encoding)
     elif model in {
-        ModelType.CLAUDE_SONNET_4
+        ModelType.CLAUDE_SONNET_4_5
     }:
         claude_client = anthropic.Anthropic(api_key=os.environ['OPENAI_API_KEY'])
         return count_tokens_claude_chat_models(messages, claude_client, model)
@@ -173,7 +173,7 @@ def get_model_token_limit(model: ModelType) -> int:
         return 128000
     elif model == ModelType.GPT_5:
         return 400000
-    elif model == ModelType.CLAUDE_SONNET_4:
+    elif model == ModelType.CLAUDE_SONNET_4_5:
         return 200000
     else:
         raise ValueError("Unknown model type")
