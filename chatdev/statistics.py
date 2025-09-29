@@ -17,6 +17,7 @@ def prompt_cost(model_type: str, num_prompt_tokens: float, num_completion_tokens
         "gpt-4o": 0.005,
         "gpt-4o-mini": 0.00015,
         "gpt-5-2025-08-07": 0.00125,
+        "claude-sonnet-4-20250514": 0.003,
     }
 
     output_cost_map = {
@@ -31,6 +32,7 @@ def prompt_cost(model_type: str, num_prompt_tokens: float, num_completion_tokens
         "gpt-4o": 0.015,
         "gpt-4o-mini": 0.0006,
         "gpt-5-2025-08-07": 0.01,
+        "claude-sonnet-4-20250514": 0.015,
     }
 
     if model_type not in input_cost_map or model_type not in output_cost_map:
@@ -125,6 +127,8 @@ def get_info(dir, log_filepath):
                 model_type = "gpt-4o-mini"
             elif model_type == "GPT_5":
                 model_type = "gpt-5-2025-08-07"
+            elif model_type == "CLAUDE_SONNET_4":
+                model_type = "claude-sonnet-4-20250514"
             # print("model_type:", model_type)
 
         lines = open(log_filepath, "r", encoding="utf8").read().split("\n")
@@ -178,7 +182,8 @@ def get_info(dir, log_filepath):
 
     # info = f"🕑duration={duration}s 💰cost=${cost} 🔨version_updates={version_updates} 📃num_code_files={num_code_files} 🏞num_png_files={num_png_files} 📚num_doc_files={num_doc_files} 📃code_lines={code_lines} 📋env_lines={env_lines} 📒manual_lines={manual_lines} 🗣num_utterances={num_utterance} 🤔num_self_reflections={num_reflection} ❓num_prompt_tokens={num_prompt_tokens} ❗num_completion_tokens={num_completion_tokens} ⁉️num_total_tokens={num_total_tokens}"
 
-    info = "\n\n💰**cost**=${:.6f}\n\n🔨**version_updates**={}\n\n📃**num_code_files**={}\n\n🏞**num_png_files**={}\n\n📚**num_doc_files**={}\n\n📃**code_lines**={}\n\n📋**env_lines**={}\n\n📒**manual_lines**={}\n\n🗣**num_utterances**={}\n\n🤔**num_self_reflections**={}\n\n❓**num_prompt_tokens**={}\n\n❗**num_completion_tokens**={}\n\n🌟**num_total_tokens**={}\n\n💡**num_reasoning_tokens**={}" \
+    if model_type == "claude-sonnet-4-20250514":
+        info = "\n\n💰**cost**=${:.6f}\n\n🔨**version_updates**={}\n\n📃**num_code_files**={}\n\n🏞**num_png_files**={}\n\n📚**num_doc_files**={}\n\n📃**code_lines**={}\n\n📋**env_lines**={}\n\n📒**manual_lines**={}\n\n🗣**num_utterances**={}\n\n🤔**num_self_reflections**={}\n\n❓**num_prompt_tokens**={}\n\n❗**num_completion_tokens**={}\n\n🌟**num_total_tokens**={}" \
         .format(cost,
                 version_updates,
                 num_code_files,
@@ -191,7 +196,22 @@ def get_info(dir, log_filepath):
                 num_reflection,
                 num_prompt_tokens,
                 num_completion_tokens,
-                num_total_tokens,
-                num_reasoning_tokens)
+                num_total_tokens)
+    else:    
+        info = "\n\n💰**cost**=${:.6f}\n\n🔨**version_updates**={}\n\n📃**num_code_files**={}\n\n🏞**num_png_files**={}\n\n📚**num_doc_files**={}\n\n📃**code_lines**={}\n\n📋**env_lines**={}\n\n📒**manual_lines**={}\n\n🗣**num_utterances**={}\n\n🤔**num_self_reflections**={}\n\n❓**num_prompt_tokens**={}\n\n❗**num_completion_tokens**={}\n\n🌟**num_total_tokens**={}\n\n💡**num_reasoning_tokens**={}" \
+            .format(cost,
+                    version_updates,
+                    num_code_files,
+                    num_png_files,
+                    num_doc_files,
+                    code_lines,
+                    env_lines,
+                    manual_lines,
+                    num_utterance,
+                    num_reflection,
+                    num_prompt_tokens,
+                    num_completion_tokens,
+                    num_total_tokens,
+                    num_reasoning_tokens)
 
     return info

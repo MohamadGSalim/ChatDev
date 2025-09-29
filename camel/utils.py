@@ -20,6 +20,8 @@ from typing import Any, Callable, List, Optional, Set, TypeVar
 import requests
 import tiktoken
 
+import anthropic
+
 from camel.messages import OpenAIMessage
 from camel.typing import ModelType, TaskType
 
@@ -48,6 +50,38 @@ def count_tokens_openai_chat_models(
         num_tokens += 4
         for key, value in message.items():
             num_tokens += len(encoding.encode(value))
+            if key == "name":  # if there's a name, the role is omitted
+                num_tokens += -1  # role is always 1 token
+    num_tokens += 2  # every reply is primed with <im_start>assistant
+    return num_tokens
+
+
+def count_tokens_claude_chat_models(
+        messages: List[OpenAIMessage],
+        claude_client: Any,
+        model: ModelType,
+) -> int:
+    r"""Counts the number of tokens required to generate a Claude chat based
+    on a given list of messages.
+
+    Args:
+        messages (List[OpenAIMessage]): The list of messages.
+        claude_client (Any): The Claude client to use.
+        model (ModelType): The Claude model to use.
+
+    Returns:
+        int: The number of tokens required.
+    """
+    num_tokens = 0
+    response = claude_client.messages.count_tokens(
+        model=model.value,
+        messages=messages
+    )
+    num_tokens = response.input_tokens
+    for message in messages:
+        # message follows <im_start>{role/name}\n{content}<im_end>\n
+        num_tokens += 4
+        for key, value in message.items():
             if key == "name":  # if there's a name, the role is omitted
                 num_tokens += -1  # role is always 1 token
     num_tokens += 2  # every reply is primed with <im_start>assistant
@@ -95,6 +129,11 @@ def num_tokens_from_messages(
         ModelType.STUB
     }:
         return count_tokens_openai_chat_models(messages, encoding)
+    elif model in {
+        ModelType.CLAUDE_SONNET_4
+    }:
+        claude_client = anthropic.Anthropic(api_key=os.environ['OPENAI_API_KEY'])
+        return count_tokens_claude_chat_models(messages, claude_client, model)
     else:
         raise NotImplementedError(
             f"`num_tokens_from_messages`` is not presently implemented "
@@ -134,6 +173,8 @@ def get_model_token_limit(model: ModelType) -> int:
         return 128000
     elif model == ModelType.GPT_5:
         return 400000
+    elif model == ModelType.CLAUDE_SONNET_4:
+        return 200000
     else:
         raise ValueError("Unknown model type")
 

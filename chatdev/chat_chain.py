@@ -7,7 +7,7 @@ import time
 from datetime import datetime
 
 from camel.agents import RolePlaying
-from camel.configs import ChatGPTConfig
+from camel.configs import ChatGPTConfig, ClaudeConfig
 from camel.typing import TaskType, ModelType
 from chatdev.chat_env import ChatEnv, ChatEnvConfig
 from chatdev.statistics import get_info
@@ -232,9 +232,11 @@ class ChatChain:
 
         preprocess_msg = "**[Preprocessing]**\n\n"
 
-        # temperature can only be set to 1.0 when using GPT-5 (reasoning model)
+        # temperature can only be set to 1.0 when using GPT-5 (reasoning model) or Claude-Sonnet-4 (with extended thinking)
         if self.model_type == ModelType.GPT_5:
             chat_gpt_config = ChatGPTConfig(temperature=1.0)
+        elif self.model_type == ModelType.CLAUDE_SONNET_4:
+            claude_config = ClaudeConfig(temperature=1.0)
         else:
             chat_gpt_config = ChatGPTConfig()
 
@@ -247,7 +249,10 @@ class ChatChain:
         preprocess_msg += "**project_name**: {}\n\n".format(self.project_name)
         preprocess_msg += "**Log File**: {}\n\n".format(self.log_filepath)
         preprocess_msg += "**ChatDevConfig**:\n{}\n\n".format(self.chat_env.config.__str__())
-        preprocess_msg += "**ChatGPTConfig**:\n{}\n\n".format(chat_gpt_config)
+        if self.model_type == ModelType.CLAUDE_SONNET_4:
+            preprocess_msg += "**ClaudeConfig**:\n{}\n\n".format(claude_config)
+        else:
+            preprocess_msg += "**ChatGPTConfig**:\n{}\n\n".format(chat_gpt_config)
         log_visualize(preprocess_msg)
 
         # init task prompt

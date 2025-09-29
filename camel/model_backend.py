@@ -17,6 +17,8 @@ from typing import Any, Dict
 import openai
 import tiktoken
 
+import anthropic
+
 from camel.typing import ModelType
 from chatdev.statistics import prompt_cost
 from chatdev.utils import log_visualize
@@ -65,8 +67,18 @@ class OpenAIModel(ModelBackend):
 
     def run(self, *args, **kwargs):
         string = "\n".join([message["content"] for message in kwargs["messages"]])
-        encoding = tiktoken.encoding_for_model(self.model_type.value)
-        num_prompt_tokens = len(encoding.encode(string))
+        if self.model_type == ModelType.CLAUDE_SONNET_4:
+            client = anthropic.Anthropic(
+                api_key=OPENAI_API_KEY,
+            )
+            response = client.messages.count_tokens(
+                model = self.model_type.value,
+                messages = kwargs["messages"]
+            )
+            num_prompt_tokens = response.input_tokens
+        else:
+            encoding = tiktoken.encoding_for_model(self.model_type.value)
+            num_prompt_tokens = len(encoding.encode(string))
         gap_between_send_receive = 15 * len(kwargs["messages"])
         num_prompt_tokens += gap_between_send_receive
 
@@ -95,17 +107,25 @@ class OpenAIModel(ModelBackend):
                 "gpt-4o": 4096, #100000
                 "gpt-4o-mini": 16384, #100000
                 "gpt-5-2025-08-07": 128000,
+                "claude-sonnet-4-20250514": 64000,
             }
             num_max_token = num_max_token_map[self.model_type.value]
             num_max_completion_tokens = num_max_token - num_prompt_tokens
             self.model_config_dict['max_completion_tokens'] = num_max_completion_tokens
+            extra_body = None
 
             if self.model_type == ModelType.GPT_5:
                 self.model_config_dict['temperature'] = 1.0
                 self.model_config_dict.pop('logit_bias', None)
+            elif self.model_type == ModelType.CLAUDE_SONNET_4:
+                self.model_config_dict['temperature'] = 1.0
+                num_budget_tokens = num_max_completion_tokens - 1
+                extra_body = {
+                    "thinking": { "type": "enabled", "budget_tokens": num_budget_tokens }
+                }
 
             response = client.chat.completions.create(*args, **kwargs, model=self.model_type.value,
-                                                      **self.model_config_dict)
+                                                      **self.model_config_dict, extra_body=extra_body)
 
             cost = prompt_cost(
                 self.model_type.value,
@@ -113,10 +133,16 @@ class OpenAIModel(ModelBackend):
                 num_completion_tokens=response.usage.completion_tokens
             )
 
-            log_visualize(
-                "**[OpenAI_Usage_Info Receive]**\nprompt_tokens: {}\ncompletion_tokens: {}\ntotal_tokens: {}\nreasoning_tokens: {}\ncost: ${:.6f}\n".format(
-                    response.usage.prompt_tokens, response.usage.completion_tokens,
-                    response.usage.total_tokens, response.usage.completion_tokens_details.reasoning_tokens, cost))
+            if self.model_type == ModelType.CLAUDE_SONNET_4:
+                log_visualize(
+                    "**[Claude_Usage_Info Receive]**\nprompt_tokens: {}\ncompletion_tokens: {}\ntotal_tokens: {}\ncost: ${:.6f}\n".format(
+                        response.usage.prompt_tokens, response.usage.completion_tokens,
+                        response.usage.total_tokens, cost))
+            else:
+                log_visualize(
+                    "**[OpenAI_Usage_Info Receive]**\nprompt_tokens: {}\ncompletion_tokens: {}\ntotal_tokens: {}\nreasoning_tokens: {}\ncost: ${:.6f}\n".format(
+                        response.usage.prompt_tokens, response.usage.completion_tokens,
+                        response.usage.total_tokens, response.usage.completion_tokens_details.reasoning_tokens, cost))
             if not isinstance(response, ChatCompletion):
                 raise RuntimeError("Unexpected return from OpenAI API")
             return response
@@ -134,17 +160,26 @@ class OpenAIModel(ModelBackend):
                 "gpt-4o": 4096, #100000
                 "gpt-4o-mini": 16384, #100000
                 "gpt-5-2025-08-07": 128000,
+                "claude-sonnet-4-20250514": 64000,
             }
             num_max_token = num_max_token_map[self.model_type.value]
             num_max_completion_tokens = num_max_token - num_prompt_tokens
             self.model_config_dict['max_completion_tokens'] = num_max_completion_tokens
+            extra_body = None
 
             if self.model_type == ModelType.GPT_5:
                 self.model_config_dict['temperature'] = 1.0
                 self.model_config_dict.pop('logit_bias', None)
+            elif self.model_type == ModelType.CLAUDE_SONNET_4:
+                self.model_config_dict['temperature'] = 1.0
+                num_budget_tokens = num_max_completion_tokens - 1
+                # add extended thinking parameter for Claude
+                extra_body = {
+                    "thinking": { "type": "enabled", "budget_tokens": num_budget_tokens }
+                }
 
             response = openai.ChatCompletion.create(*args, **kwargs, model=self.model_type.value,
-                                                    **self.model_config_dict)
+                                                    **self.model_config_dict, extra_body=extra_body)
 
             cost = prompt_cost(
                 self.model_type.value,
@@ -152,10 +187,16 @@ class OpenAIModel(ModelBackend):
                 num_completion_tokens=response["usage"]["completion_tokens"]
             )
 
-            log_visualize(
-                "**[OpenAI_Usage_Info Receive]**\nprompt_tokens: {}\ncompletion_tokens: {}\ntotal_tokens: {}\nreasoning_tokens: {}\ncost: ${:.6f}\n".format(
+            if self.model_type == ModelType.CLAUDE_SONNET_4:
+                log_visualize(
+                "**[Claude_Usage_Info Receive]**\nprompt_tokens: {}\ncompletion_tokens: {}\ntotal_tokens: {}\ncost: ${:.6f}\n".format(
                     response["usage"]["prompt_tokens"], response["usage"]["completion_tokens"],
-                    response["usage"]["total_tokens"], response["usage"]["completion_tokens_details"]["reasoning_tokens"], cost))
+                    response["usage"]["total_tokens"], cost))
+            else:
+                log_visualize(
+                    "**[OpenAI_Usage_Info Receive]**\nprompt_tokens: {}\ncompletion_tokens: {}\ntotal_tokens: {}\nreasoning_tokens: {}\ncost: ${:.6f}\n".format(
+                        response["usage"]["prompt_tokens"], response["usage"]["completion_tokens"],
+                        response["usage"]["total_tokens"], response["usage"]["completion_tokens_details"]["reasoning_tokens"], cost))
             if not isinstance(response, Dict):
                 raise RuntimeError("Unexpected return from OpenAI API")
             return response
@@ -201,6 +242,7 @@ class ModelFactory:
             ModelType.GPT_4O,
             ModelType.GPT_4O_MINI,
             ModelType.GPT_5,
+            ModelType.CLAUDE_SONNET_4,
             None
         }:
             model_class = OpenAIModel
