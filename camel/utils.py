@@ -73,11 +73,11 @@ def count_tokens_claude_chat_models(
         int: The number of tokens required.
     """
     num_tokens = 0
-    response = claude_client.messages.count_tokens(
-        model=model.value,
-        messages=messages
-    )
-    num_tokens = response.input_tokens
+    # system message for Claude
+    system = ""
+    # original messages for Claude
+    claude_messages = messages
+    
     for message in messages:
         # message follows <im_start>{role/name}\n{content}<im_end>\n
         num_tokens += 4
@@ -85,6 +85,17 @@ def count_tokens_claude_chat_models(
             if key == "name":  # if there's a name, the role is omitted
                 num_tokens += -1  # role is always 1 token
     num_tokens += 2  # every reply is primed with <im_start>assistant
+    
+    if messages and messages[0]["role"] == "system":
+        claude_messages = messages[:]
+        system = claude_messages.pop(0)["content"]
+    response = claude_client.messages.count_tokens(
+        model=model.value,
+        system=system,
+        messages=claude_messages
+    )
+    num_tokens += response.input_tokens
+    
     return num_tokens
 
 

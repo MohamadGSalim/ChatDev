@@ -66,14 +66,23 @@ class OpenAIModel(ModelBackend):
         self.model_config_dict = model_config_dict
 
     def run(self, *args, **kwargs):
+        # string for OpenAI tiktoken
         string = "\n".join([message["content"] for message in kwargs["messages"]])
+        # system message for Claude
+        system = ""
+        # original messages for Claude
+        claude_messages = kwargs["messages"]
         if self.model_type == ModelType.CLAUDE_SONNET_4_5:
-            client = anthropic.Anthropic(
+            if kwargs["messages"] and kwargs["messages"][0]["role"] == "system":
+                claude_messages = kwargs["messages"][:]
+                system = claude_messages.pop(0)["content"]
+            claude_client = anthropic.Anthropic(
                 api_key=OPENAI_API_KEY,
             )
-            response = client.messages.count_tokens(
-                model = self.model_type.value,
-                messages = kwargs["messages"]
+            response = claude_client.messages.count_tokens(
+                model=self.model_type.value,
+                system=system,
+                messages=claude_messages
             )
             num_prompt_tokens = response.input_tokens
         else:
@@ -119,7 +128,9 @@ class OpenAIModel(ModelBackend):
                 self.model_config_dict.pop('logit_bias', None)
             elif self.model_type == ModelType.CLAUDE_SONNET_4_5:
                 self.model_config_dict['temperature'] = 1.0
+                self.model_config_dict.pop('top_p', None)
                 num_budget_tokens = num_max_completion_tokens - 1
+                # add extended thinking parameter for Claude
                 extra_body = {
                     "thinking": { "type": "enabled", "budget_tokens": num_budget_tokens }
                 }
@@ -172,6 +183,7 @@ class OpenAIModel(ModelBackend):
                 self.model_config_dict.pop('logit_bias', None)
             elif self.model_type == ModelType.CLAUDE_SONNET_4_5:
                 self.model_config_dict['temperature'] = 1.0
+                self.model_config_dict.pop('top_p', None)
                 num_budget_tokens = num_max_completion_tokens - 1
                 # add extended thinking parameter for Claude
                 extra_body = {
